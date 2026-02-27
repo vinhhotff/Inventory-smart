@@ -7,16 +7,18 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-public class Inventory {
+public class Inventory extends BaseEntity {
 
     @Id
     Long productId;
@@ -25,7 +27,6 @@ public class Inventory {
 
     Integer reservedQuantity;
 
-    //tranh hien tuong 2 ng click cung luc
     @Version
     Long version;
 }

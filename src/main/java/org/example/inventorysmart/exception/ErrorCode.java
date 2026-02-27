@@ -9,13 +9,14 @@ public enum ErrorCode {
     INVALID_KEY(1001, "Uncategorized error", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_FOUND(1002, "Không tìm thấy sản phẩm", HttpStatus.NOT_FOUND),
     INSUFFICIENT_STOCK(1003, "Số lượng tồn kho không đủ", HttpStatus.BAD_REQUEST);
+
     ErrorCode(int code, String message, HttpStatus statusCode) {
         this.code = code;
         this.message = message;
         this.statusCode = statusCode;
     }
+
     private final int code;
     private final String message;
     private final HttpStatus statusCode;
-
 }
