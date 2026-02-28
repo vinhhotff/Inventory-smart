@@ -22,34 +22,34 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder; // In case we need register later
+        private final AuthenticationManager authenticationManager;
+        private final UserRepository userRepository;
+        private final JwtService jwtService;
+        private final PasswordEncoder passwordEncoder; // In case we need register later
 
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody AuthRequest request) {
-        // Authenticate credentials
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        @PostMapping("/login")
+        public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody AuthRequest request) {
+                // Authenticate credentials
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        // Fetch user from DB
-        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+                // Fetch user from DB
+                User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
 
-        // Generate JWT
-        String token = jwtService.generateToken(user);
+                // Generate JWT
+                String token = jwtService.generateToken(user);
 
-        AuthResponse authResponse = AuthResponse.builder()
-                .token(token)
-                .message("Login successful")
-                .build();
+                AuthResponse authResponse = AuthResponse.builder()
+                                .token(token)
+                                .message("Login successful")
+                                .build();
 
-        ApiResponse<AuthResponse> apiResponse = ApiResponse.<AuthResponse>builder()
-                .code(200)
-                .message("Success")
-                .data(authResponse)
-                .build();
+                ApiResponse<AuthResponse> apiResponse = ApiResponse.<AuthResponse>builder()
+                                .code(200)
+                                .message("Success")
+                                .result(authResponse)
+                                .build();
 
-        return ResponseEntity.ok(apiResponse);
-    }
+                return ResponseEntity.ok(apiResponse);
+        }
 }
