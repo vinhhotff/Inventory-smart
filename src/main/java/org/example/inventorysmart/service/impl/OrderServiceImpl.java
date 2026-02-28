@@ -9,6 +9,8 @@ import org.example.inventorysmart.entity.Order;
 import org.example.inventorysmart.entity.OrderItem;
 import org.example.inventorysmart.entity.OrderStatus;
 import org.example.inventorysmart.mapper.OrderMapper;
+import org.example.inventorysmart.producer.OrderProducer;
+import org.example.inventorysmart.dto.event.OrderEvent;
 import org.example.inventorysmart.repository.OrderRepository;
 import org.example.inventorysmart.service.InventoryService;
 import org.example.inventorysmart.service.OrderService;
@@ -25,6 +27,7 @@ public class OrderServiceImpl implements OrderService {
     OrderRepository orderRepository;
     InventoryService inventoryService;
     OrderMapper orderMapper;
+    OrderProducer orderProducer;
 
     @Override
     @Transactional
@@ -63,7 +66,15 @@ public class OrderServiceImpl implements OrderService {
         // nhờ tính năng cascade = CascadeType.ALL đã cài trên Entity.
         Order savedOrder = orderRepository.save(order);
 
-        // 4. Đóng gói ra cái Đĩa đẹp đẽ (DTO) để trả về Frontend
+        // 4. Gửi OrderEvent vào RabbitMQ Message Queue
+        OrderEvent orderEvent = OrderEvent.builder()
+                .orderId(savedOrder.getId())
+                .userId(savedOrder.getUserId())
+                .totalAmount(savedOrder.getTotalAmount())
+                .build();
+        orderProducer.sendOrderEvent(orderEvent);
+
+        // 5. Đóng gói ra cái Đĩa đẹp đẽ (DTO) để trả về Frontend
         return orderMapper.toOrderResponse(savedOrder);
     }
 }
