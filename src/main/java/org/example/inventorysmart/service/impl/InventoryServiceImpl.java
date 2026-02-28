@@ -8,6 +8,7 @@ import org.example.inventorysmart.exception.AppException;
 import org.example.inventorysmart.exception.ErrorCode;
 import org.example.inventorysmart.repository.InventoryRepository;
 import org.example.inventorysmart.service.InventoryService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,8 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
+    // Bất kỳ ai thực hiện giao dịch mua hàng đều phải có quyền USER hoặc ADMIN
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public void reserveStock(Long productId, Integer quantity) {
         Inventory inventory = inventoryRepository.findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
