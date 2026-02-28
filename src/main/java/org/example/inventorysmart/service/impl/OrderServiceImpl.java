@@ -32,7 +32,6 @@ public class OrderServiceImpl implements OrderService {
         // 1. Ánh xạ từ DTO sang Order Entity
         Order order = orderMapper.toOrder(request);
         order.setStatus(OrderStatus.PENDING);
-        order.setCreatedAt(LocalDateTime.now());
 
         double totalAmount = 0.0;
 

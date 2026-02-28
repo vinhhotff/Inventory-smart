@@ -14,12 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class InventoryServiceImpl extends InventoryService {
+public class InventoryServiceImpl implements InventoryService {
 
     InventoryRepository inventoryRepository;
 
-    @Transactional
     @Override
+    @Transactional
     public void reserveStock(Long productId, Integer quantity) {
         Inventory inventory = inventoryRepository.findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));

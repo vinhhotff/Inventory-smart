@@ -1,6 +1,7 @@
 package org.example.inventorysmart.exception;
 
 public class AppException extends RuntimeException {
+
     private final ErrorCode errorCode;
 
     public AppException(ErrorCode errorCode) {
