@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # 1. Ứng dụng chính (Spring Boot)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventory_app
+    ports:
+      - "8080:8080"
+    environment:
+      # Kéo profile "docker" để ứng dụng đọc cấu hình từ application-docker.yml
+      - SPRING_PROFILES_ACTIVE=docker
+      
+      # Truyền biến môi trường vào cho Spring Boot
+      - DB_HOST=db
+      - DB_NAME=inventory_db
+      - DB_USER=thanvinh
+      - DB_PASS=NamMoi2020
+      - RABBITMQ_HOST=rabbitmq
+      - REDIS_HOST=redis
+    depends_on:
+      db:
+        condition: service_healthy   # Chờ DB khởi động và sẵn sàng mới chạy App
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # 2. Cơ sở dữ liệu PostgreSQL
+  db:
+    image: postgres:15
+    container_name: inventory_db
+    environment:
+      POSTGRES_USER: thanvinh
+      POSTGRES_PASSWORD: NamMoi2020
+      POSTGRES_DB: inventory_db
+    ports:
+      # Ánh xạ port 5432 của máy thật (localhost) vào 5432 của container
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thanvinh -d inventory_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # 3. Cache Redis
+  redis:
+    image: redis:alpine
+    container_name: inventory_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # 4. Message Queue RabbitMQ (bản management có sẵn giao diện Web Admin)
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: inventory_rabbitmq
+    ports:
+      - "5672:5672"   # Cổng giao tiếp cho ứng dụng (Spring Boot)
+      - "15672:15672" # Cổng giao diện quản lý (Truy cập bằng HTTP: localhost:15672)
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# Định nghĩa mạng chung cho tất cả các service gọi nhau bằng container_name (ví dụ: host là "db")
+networks:
+  app-network:
+    driver: bridge
+
+# Mount Volume để dữ liệu Postgres không bị mất sau khi tắt/xoá Container
+volumes:
+  postgres_data:
