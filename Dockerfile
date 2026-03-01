@@ -1,5 +1,5 @@
 # Stage 1: Build the application using Maven (Multi-stage build)
-FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # Tối ưu hóa Cache của Docker bằng cách copy và tải dependency trước
@@ -11,11 +11,11 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Create the minimal runtime image
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Kỹ thuật bảo mật: Không chạy app bằng quyền root trong container
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN groupadd -r spring && useradd -r -g spring spring
 USER spring:spring
 
 # Chỉ copy file .jar đã build được từ Stage 1 sang Stage 2
