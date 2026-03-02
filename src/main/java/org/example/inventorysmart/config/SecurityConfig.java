@@ -17,6 +17,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.example.inventorysmart.dto.response.ApiResponse;
+import org.example.inventorysmart.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
 
 @Configuration
 @EnableWebSecurity
@@ -32,20 +36,32 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Permit public endpoints
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html")
                         .permitAll()
-                        // All other endpoints require authentication
                         .anyRequest().authenticated())
-                // Stateless policy
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                // Add JWT filter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+                            response.setStatus(errorCode.getStatusCode().value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+                            ApiResponse<?> apiResponse = ApiResponse.builder()
+                                    .code(errorCode.getCode())
+                                    .message(errorCode.getMessage())
+                                    .build();
+
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+                            response.flushBuffer();
+                        }));
 
         return http.build();
     }

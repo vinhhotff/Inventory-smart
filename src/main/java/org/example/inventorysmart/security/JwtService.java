@@ -21,11 +21,10 @@ public class JwtService {
 
     // You should keep this secret in application.properties or environment variable
     // in production
-    @Value("${application.security.jwt.secret-key:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
+    @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
-    // Default expiration: 1 hour
-    @Value("${application.security.jwt.expiration:3600000}")
+    @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
     public String extractUsername(String token) {

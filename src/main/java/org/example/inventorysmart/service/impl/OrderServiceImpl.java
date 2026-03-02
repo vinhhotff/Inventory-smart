@@ -17,7 +17,10 @@ import org.example.inventorysmart.service.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import org.example.inventorysmart.exception.AppException;
+import org.example.inventorysmart.exception.ErrorCode;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Service
 @RequiredArgsConstructor
@@ -32,41 +35,25 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
-        // 1. Ánh xạ từ DTO sang Order Entity
         Order order = orderMapper.toOrder(request);
         order.setStatus(OrderStatus.PENDING);
 
         double totalAmount = 0.0;
 
-        // 2. Duyệt qua từng sản phẩm khách hàng order
         if (order.getOrderItems() != null) {
             for (OrderItem item : order.getOrderItems()) {
-
-                // Gọi sang Module Kho (InventoryService) để giữ hàng
-                // NẾU HẾT HÀNG: InventoryService tự quăng AppException,
-                // @Transactional sẽ lập tức ROLLBACK (Hủy) ngay lập tức cả đơn hàng này.
                 inventoryService.reserveStock(item.getProductId(), item.getQuantity());
 
-                // (Lưu ý: Vì chưa có màn Quản lý Sản phẩm Product, giá đang được Mock tạm là
-                // 500k)
                 double mockProductPrice = 500000.0;
                 item.setPrice(mockProductPrice);
-
-                // Cộng dồn vào tổng tiền đơn hàng
                 totalAmount += mockProductPrice * item.getQuantity();
-
-                // Lắp ráp 2 chiều: Item phải biết nó thuộc về Order nào
                 item.setOrder(order);
             }
         }
 
         order.setTotalAmount(totalAmount);
-
-        // 3. Khối lệnh này sẽ TỰ ĐỘNG LƯU cả Order lẫn danh sách OrderItem
-        // nhờ tính năng cascade = CascadeType.ALL đã cài trên Entity.
         Order savedOrder = orderRepository.save(order);
 
-        // 4. Gửi OrderEvent vào RabbitMQ Message Queue
         OrderEvent orderEvent = OrderEvent.builder()
                 .orderId(savedOrder.getId())
                 .userId(savedOrder.getUserId())
@@ -74,7 +61,23 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         orderProducer.sendOrderEvent(orderEvent);
 
-        // 5. Đóng gói ra cái Đĩa đẹp đẽ (DTO) để trả về Frontend
         return orderMapper.toOrderResponse(savedOrder);
+    }
+
+    @Override
+    public OrderResponse getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+
+        // CHỐNG IDOR: Nếu không phải chủ nhân đơn hàng VÀ không phải Admin -> Cấm!
+        if (!order.getCreatedBy().equals(currentUsername) && !isAdmin) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        return orderMapper.toOrderResponse(order);
     }
 }
