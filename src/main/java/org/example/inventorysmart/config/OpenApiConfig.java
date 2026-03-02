@@ -10,18 +10,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    @Bean
-    public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Inventory Smart API")
-                        .version("1.0.0")
-                        .description("API Documentation for Order and Inventory Management - Sprint 5")
-                        .contact(new Contact()
-                                .name("Development Team")
-                                .email("team@inventorysmart.com"))
-                        .license(new License()
-                                .name("Apache 2.0")
-                                .url("http://springdoc.org")));
-    }
+        @Bean
+        public OpenAPI customOpenAPI() {
+                return new OpenAPI()
+                                .info(new Info()
+                                                .title("Inventory Smart API")
+                                                .version("1.0.0")
+                                                .description("API Documentation for Order and Inventory Management - Sprint 5")
+                                                .contact(new Contact()
+                                                                .name("Vinhhotff ")
+                                                                .email("thanvinh1602@gmail.com"))
+                                                .license(new License()
+                                                                .name("Apache 2.0")
+                                                                .url("http://springdoc.org")));
+        }
 }

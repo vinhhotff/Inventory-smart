@@ -8,6 +8,8 @@ import org.example.inventorysmart.dto.response.AuthResponse;
 import org.example.inventorysmart.entity.User;
 import org.example.inventorysmart.repository.UserRepository;
 import org.example.inventorysmart.security.JwtService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,6 +41,15 @@ public class AuthController {
                 // Generate JWT
                 String token = jwtService.generateToken(user);
 
+                // Create HttpOnly Cookie for Stateless Authentication
+                ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                                .httpOnly(true)
+                                .secure(false) // Set to true in production (HTTPS)
+                                .path("/")
+                                .maxAge(3600) // 1 hour
+                                .sameSite("Strict")
+                                .build();
+
                 AuthResponse authResponse = AuthResponse.builder()
                                 .token(token)
                                 .message("Login successful")
@@ -50,6 +61,8 @@ public class AuthController {
                                 .result(authResponse)
                                 .build();
 
-                return ResponseEntity.ok(apiResponse);
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .body(apiResponse);
         }
 }

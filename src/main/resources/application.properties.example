@@ -1,0 +1,35 @@
+spring.application.name=Inventory-Smart
+
+# Cấu hình Redis & Caching
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.cache.type=redis
+spring.cache.redis.time-to-live=3600000
+spring.cache.redis.cache-null-values=false
+
+# Cấu hình kết nối PostgreSQL
+spring.datasource.url=jdbc:postgresql://localhost:5433/inventory_db
+spring.datasource.username=thanvinh
+spring.datasource.password=YOUR_DATABASE_PASSWORD
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# Cấu hình Hibernate tự động tạo bảng (Dành cho Dev)
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# MapStruct Configuration: Ignore unmapped target properties to keep logs clean
+mapstruct.unmappedTargetPolicy=IGNORE
+
+
+# rabbitmq-server
+
+# JWT Security
+application.security.jwt.secret-key=YOUR_SECRET_KEY
+application.security.jwt.expiration=3600000
+
+# Mở các endpoint của Actuator (health, info, prometheus)
+management.endpoints.web.exposure.include=health,info,prometheus
+management.endpoint.health.show-details=always
+management.metrics.tags.application=${spring.application.name}

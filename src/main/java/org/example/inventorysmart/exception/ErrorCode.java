@@ -8,7 +8,9 @@ public enum ErrorCode {
     UNCATEGORIZED_EXCEPTION(9999, "Lỗi không xác định", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_KEY(1001, "Uncategorized error", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_FOUND(1002, "Không tìm thấy sản phẩm", HttpStatus.NOT_FOUND),
-    INSUFFICIENT_STOCK(1003, "Số lượng tồn kho không đủ", HttpStatus.BAD_REQUEST);
+    INSUFFICIENT_STOCK(1003, "Số lượng tồn kho không đủ", HttpStatus.BAD_REQUEST),
+    UNAUTHENTICATED(1004, "Vui lòng đăng nhập", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(1005, "Bạn không có quyền truy cập", HttpStatus.FORBIDDEN);
 
     ErrorCode(int code, String message, HttpStatus statusCode) {
         this.code = code;

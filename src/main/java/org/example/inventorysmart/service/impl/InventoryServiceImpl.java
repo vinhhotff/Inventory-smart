@@ -21,7 +21,6 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
-    // Bất kỳ ai thực hiện giao dịch mua hàng đều phải có quyền USER hoặc ADMIN
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public void reserveStock(Long productId, Integer quantity) {
         Inventory inventory = inventoryRepository.findById(productId)
