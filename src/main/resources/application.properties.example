@@ -10,7 +10,7 @@ spring.cache.redis.cache-null-values=false
 # Cấu hình kết nối PostgreSQL
 spring.datasource.url=jdbc:postgresql://localhost:5433/inventory_db
 spring.datasource.username=thanvinh
-spring.datasource.password=NamMoi2020
+spring.datasource.password=YOUR_DATABASE_PASSWORD
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # Cấu hình Hibernate tự động tạo bảng (Dành cho Dev)
@@ -26,7 +26,7 @@ mapstruct.unmappedTargetPolicy=IGNORE
 # rabbitmq-server
 
 # JWT Security
-application.security.jwt.secret-key=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+application.security.jwt.secret-key=YOUR_SECRET_KEY
 application.security.jwt.expiration=3600000
 
 # Mở các endpoint của Actuator (health, info, prometheus)
