@@ -16,6 +16,8 @@ import org.example.inventorysmart.service.InventoryService;
 import org.example.inventorysmart.service.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import org.example.inventorysmart.exception.AppException;
 import org.example.inventorysmart.exception.ErrorCode;
@@ -65,6 +67,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Cacheable(value = "orders", key = "#id")
     public OrderResponse getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
