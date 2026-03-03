@@ -1,0 +1,73 @@
+name: Java CI/CD with Maven and Docker
+
+on:
+  push:
+    branches: [ "master", "feature/**" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  # 1. Giai đoạn CI (Continuous Integration): Kiểm tra chất lượng code
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      # Nếu sau này em viết Integration Test (Test tích hợp) thì bật các service này lên
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: thanvinh
+          POSTGRES_PASSWORD: NamMoi2020
+          POSTGRES_DB: inventory_db
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+      rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+          - 5672:5672
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build and Run Unit Tests
+      run: mvn clean test
+
+  # 2. Giai đoạn CD (Continuous Deployment): Đóng gói Docker (Chỉ chạy khi merge vào master)
+  docker-push:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Login to Docker Hub
+      # Em cần tạo Secret: DOCKER_USERNAME và DOCKER_PASSWORD trên GitHub để chạy bước này
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/inventory-smart:latest
